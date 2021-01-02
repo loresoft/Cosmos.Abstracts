@@ -6,6 +6,10 @@ environment:
 init:
   - git config --global core.autocrlf input
 
+install:
+  - ps: Import-Module "$env:ProgramFiles\Azure Cosmos DB Emulator\PSModules\Microsoft.Azure.CosmosDB.Emulator"
+  - ps: Start-CosmosDbEmulator
+
 dotnet_csproj:
   patch: true
   file: 'build\version.props'
