@@ -11,7 +11,7 @@ Cosmos DB Abstracts library defines abstract base classes for repository pattern
 
 The Cosmos.Abstracts library is available on nuget.org via package name `Cosmos.Abstracts`.
 
-To install MongoDB.Abstracts, run the following command in the Package Manager Console
+To install Cosmos.Abstracts, run the following command in the Package Manager Console
 
     PM> Install-Package Cosmos.Abstracts
     
