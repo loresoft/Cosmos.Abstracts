@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -73,18 +75,25 @@ namespace Cosmos.Abstracts
             if (partitionKey == default)
                 partitionKey = new PartitionKey(id);
 
-            var response = await container
-                .ReadItemAsync<TEntity>(id, partitionKey, cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+            try
+            {
+                var response = await container
+                        .ReadItemAsync<TEntity>(id, partitionKey, cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
 
-            LogResponse(response);
+                LogResponse(response);
 
-            return response.Resource;
+                return response.Resource;
+            }
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                return default;
+            }
         }
 
 
         /// <inheritdoc/>
-        public async ValueTask<IEnumerable<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>> criteria, CancellationToken cancellationToken = default)
+        public async ValueTask<IReadOnlyList<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>> criteria, CancellationToken cancellationToken = default)
         {
             if (criteria == null)
                 throw new ArgumentNullException(nameof(criteria));
@@ -112,7 +121,7 @@ namespace Cosmos.Abstracts
         }
 
         /// <inheritdoc/>
-        public async ValueTask<IEnumerable<TEntity>> FindAllAsync(QueryDefinition queryDefinition, CancellationToken cancellationToken = default)
+        public async ValueTask<IReadOnlyList<TEntity>> FindAllAsync(QueryDefinition queryDefinition, CancellationToken cancellationToken = default)
         {
             if (queryDefinition == null)
                 throw new ArgumentNullException(nameof(queryDefinition));
@@ -202,10 +211,12 @@ namespace Cosmos.Abstracts
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
-            var container = await GetContainerAsync().ConfigureAwait(false);
+            BeforeSave(entity);
 
             var partitionKey = GetPartitionKey(entity);
             var options = CreateItemOptions();
+
+            var container = await GetContainerAsync().ConfigureAwait(false);
 
             var response = await container
                 .UpsertItemAsync(entity, partitionKey, options, cancellationToken)
@@ -213,9 +224,9 @@ namespace Cosmos.Abstracts
 
             LogResponse(response);
 
-            return Options.OptimizeBandwidth
-                ? entity
-                : response.Resource;
+            return options.EnableContentResponseOnWrite == true
+                ? response.Resource
+                : entity;
         }
 
         /// <inheritdoc/>
@@ -224,10 +235,12 @@ namespace Cosmos.Abstracts
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
-            var container = await GetContainerAsync().ConfigureAwait(false);
+            BeforeSave(entity);
 
             var partitionKey = GetPartitionKey(entity);
             var options = CreateItemOptions();
+
+            var container = await GetContainerAsync().ConfigureAwait(false);
 
             var response = await container
                 .CreateItemAsync(entity, partitionKey, options, cancellationToken)
@@ -235,7 +248,9 @@ namespace Cosmos.Abstracts
 
             LogResponse(response);
 
-            return response.Resource;
+            return options.EnableContentResponseOnWrite == true
+                ? response.Resource
+                : entity;
         }
 
         /// <inheritdoc/>
@@ -244,10 +259,12 @@ namespace Cosmos.Abstracts
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
-            var container = await GetContainerAsync().ConfigureAwait(false);
+            BeforeSave(entity);
 
             var partitionKey = GetPartitionKey(entity);
             var options = UpdateItemOptions();
+
+            var container = await GetContainerAsync().ConfigureAwait(false);
 
             var response = await container
                 .UpsertItemAsync(entity, partitionKey, options, cancellationToken)
@@ -255,11 +272,13 @@ namespace Cosmos.Abstracts
 
             LogResponse(response);
 
-            return response.Resource;
+            return options.EnableContentResponseOnWrite == true
+                ? response.Resource
+                : entity;
         }
 
         /// <inheritdoc/>
-        public async ValueTask<TEntity> DeleteAsync(string id, PartitionKey partitionKey = default, CancellationToken cancellationToken = default)
+        public async ValueTask DeleteAsync(string id, PartitionKey partitionKey = default, CancellationToken cancellationToken = default)
         {
             if (id == null)
                 throw new ArgumentNullException(nameof(id));
@@ -275,12 +294,10 @@ namespace Cosmos.Abstracts
                 .ConfigureAwait(false);
 
             LogResponse(response);
-
-            return response.Resource;
         }
 
         /// <inheritdoc/>
-        public async ValueTask<TEntity> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
+        public async ValueTask DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
@@ -288,7 +305,7 @@ namespace Cosmos.Abstracts
             var partitionKey = GetPartitionKey(entity);
             var entityKey = GetEntityKey(entity);
 
-            return await DeleteAsync(entityKey, partitionKey, cancellationToken).ConfigureAwait(false);
+            await DeleteAsync(entityKey, partitionKey, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -315,6 +332,21 @@ namespace Cosmos.Abstracts
         /// The Cosmos DB factory methods.
         /// </value>
         protected ICosmosFactory Factory { get; }
+
+
+        /// <summary>
+        /// Called before a saving the specified <paramref name="entity"/>.
+        /// </summary>
+        /// <param name="entity">The entity being saved.</param>
+        protected virtual void BeforeSave(TEntity entity)
+        {
+            var cosmosEntity = entity as ICosmosEntity;
+            if (cosmosEntity == null)
+                return;
+
+            if (cosmosEntity.Id.IsNullOrEmpty())
+                cosmosEntity.Id = Guid.NewGuid().ToString("N");
+        }
 
 
         /// <summary>
@@ -361,6 +393,9 @@ namespace Cosmos.Abstracts
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
+            if (entity is ICosmosEntity cosmosEntity)
+                return cosmosEntity.GetPartitionKey();
+
             var accessor = _partitionKeyAccessor.Value;
             if (accessor != null)
             {
@@ -383,6 +418,9 @@ namespace Cosmos.Abstracts
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
+
+            if (entity is ICosmosEntity cosmosEntity)
+                return cosmosEntity.Id;
 
             var accessor = _primaryKeyAccessor.Value;
             if (accessor == null)
@@ -445,7 +483,18 @@ namespace Cosmos.Abstracts
             if (response == null)
                 return;
 
-            var r = response;
+            if (!Logger.IsEnabled(LogLevel.Debug))
+                return;
+
+            Logger.LogDebug(
+                "Response from '{memberName}'; Status: '{statusCode}'; Charge: {charge} RU; Elapsed: {elapsedTime} ms; File: '{fileName}' ({lineNumber})",
+                memberName,
+                response.StatusCode,
+                response.RequestCharge,
+                response.Diagnostics?.GetClientElapsedTime().TotalMilliseconds ?? 0,
+                Path.GetFileName(sourceFilePath),
+                sourceLineNumber
+            );
         }
 
 
@@ -455,7 +504,10 @@ namespace Cosmos.Abstracts
         /// <returns>The <see cref="ItemRequestOptions"/> instance.</returns>
         protected virtual ItemRequestOptions CreateItemOptions()
         {
-            return new ItemRequestOptions();
+            return new ItemRequestOptions
+            {
+                EnableContentResponseOnWrite = !Options.OptimizeBandwidth
+            };
         }
 
         /// <summary>
@@ -464,7 +516,10 @@ namespace Cosmos.Abstracts
         /// <returns>The <see cref="ItemRequestOptions"/> instance.</returns>
         protected virtual ItemRequestOptions UpdateItemOptions()
         {
-            return new ItemRequestOptions();
+            return new ItemRequestOptions
+            {
+                EnableContentResponseOnWrite = !Options.OptimizeBandwidth
+            };
         }
 
         /// <summary>

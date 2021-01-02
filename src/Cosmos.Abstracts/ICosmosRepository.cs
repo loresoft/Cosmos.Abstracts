@@ -34,7 +34,7 @@ namespace Cosmos.Abstracts
         /// A list of <typeparamref name="TEntity"/> instances that matches the criteria if found, otherwise null.
         /// </returns>
         /// <exception cref="System.ArgumentNullException"><paramref name="criteria"/> is null</exception>
-        ValueTask<IEnumerable<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>> criteria, CancellationToken cancellationToken = default);
+        ValueTask<IReadOnlyList<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>> criteria, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Find all entities using the specified <paramref name="queryDefinition"/>.
@@ -45,7 +45,7 @@ namespace Cosmos.Abstracts
         /// A list of <typeparamref name="TEntity"/> instances that matches the query if found, otherwise null.
         /// </returns>
         /// <exception cref="System.ArgumentNullException"><paramref name="queryDefinition"/> is null</exception>
-        ValueTask<IEnumerable<TEntity>> FindAllAsync(QueryDefinition queryDefinition, CancellationToken cancellationToken = default);
+        ValueTask<IReadOnlyList<TEntity>> FindAllAsync(QueryDefinition queryDefinition, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Find the first entity using the specified <paramref name="criteria"/> expression.
@@ -108,11 +108,8 @@ namespace Cosmos.Abstracts
         /// </summary>
         /// <param name="entity">The entity to be deleted.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>
-        /// The <typeparamref name="TEntity"/> that was deleted.
-        /// </returns>
         /// <exception cref="System.ArgumentNullException"><paramref name="entity"/> is null</exception>
-        ValueTask<TEntity> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
+        ValueTask DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Deletes an entity with the specified <paramref name="id" /> and <paramref name="partitionKey" /> from the underlying data store.
@@ -120,11 +117,8 @@ namespace Cosmos.Abstracts
         /// <param name="id">The entity identifier to delete.</param>
         /// <param name="partitionKey">The partition key.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>
-        /// The <typeparamref name="TEntity"/> that was deleted.
-        /// </returns>
         /// <exception cref="System.ArgumentNullException"><paramref name="id"/> is <see langword="null" />.</exception>
-        ValueTask<TEntity> DeleteAsync(string id, PartitionKey partitionKey = default, CancellationToken cancellationToken = default);
+        ValueTask DeleteAsync(string id, PartitionKey partitionKey = default, CancellationToken cancellationToken = default);
     }
 
 }

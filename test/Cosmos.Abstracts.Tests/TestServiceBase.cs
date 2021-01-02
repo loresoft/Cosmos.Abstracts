@@ -41,7 +41,10 @@ namespace Cosmos.Abstracts.Tests
         {
             services
                 .AddSingleton(Configuration)
-                .AddLogging((builder) => builder.AddXUnit(OutputHelper))
+                .AddLogging((builder) => builder
+                    .AddXUnit(OutputHelper)
+                    .SetMinimumLevel(LogLevel.Debug)
+                )
                 .AddCosmosRepository();
         }
     }
