@@ -25,7 +25,7 @@ build_script:
   - dotnet pack Cosmos.Abstracts.sln --configuration Release --include-symbols --include-source
 
 test_script:
-  - dotnet test Cosmos.Abstracts.sln --configuration Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="[xunit*]*"
+  - dotnet test Cosmos.Abstracts.sln --configuration Release --collect:"XPlat Code Coverage"
 
 artifacts:
 - path: artifacts\*.*nupkg
