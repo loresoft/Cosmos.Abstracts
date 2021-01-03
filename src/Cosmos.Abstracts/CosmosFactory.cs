@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Cosmos.Abstracts.Extensions;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -31,10 +32,10 @@ namespace Cosmos.Abstracts
             _repositoryOptions = repositoryOptions.Value;
             _httpClientFactory = httpClientFactory;
 
-            if (string.IsNullOrWhiteSpace(_repositoryOptions.ConnectionString))
+            if (_repositoryOptions.ConnectionString.IsNullOrEmpty())
                 throw new ArgumentException($"The repository option {nameof(CosmosRepositoryOptions.ConnectionString)} is required.", nameof(repositoryOptions));
 
-            if (string.IsNullOrWhiteSpace(_repositoryOptions.DatabaseId))
+            if (_repositoryOptions.DatabaseId.IsNullOrEmpty())
                 throw new ArgumentException($"The repository option {nameof(CosmosRepositoryOptions.DatabaseId)} is required.", nameof(repositoryOptions));
 
             _lazyClient = new Lazy<CosmosClient>(InitializeClient);

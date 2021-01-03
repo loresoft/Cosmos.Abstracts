@@ -3,9 +3,10 @@ using Cosmos.Abstracts.Tests.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Cosmos.Abstracts.Tests
+namespace Cosmos.Abstracts.Tests.Services
 {
-    public class UserRepository : CosmosRepository<User>
+
+    public class UserRepository : CosmosRepository<User>, IUserRepository
     {
         public UserRepository(ILoggerFactory logFactory, IOptions<CosmosRepositoryOptions> repositoryOptions, ICosmosFactory databaseFactory)
             : base(logFactory, repositoryOptions, databaseFactory)

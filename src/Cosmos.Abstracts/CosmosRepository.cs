@@ -26,6 +26,7 @@ namespace Cosmos.Abstracts
     {
         private readonly Lazy<Task<Container>> _lazyContainer;
 
+        private readonly Lazy<ContainerAttribute> _containerAttribute;
         private readonly Lazy<Func<TEntity, string>> _partitionKeyAccessor;
         private readonly Lazy<Func<TEntity, string>> _primaryKeyAccessor;
 
@@ -60,6 +61,8 @@ namespace Cosmos.Abstracts
             Factory = databaseFactory;
 
             _lazyContainer = new Lazy<Task<Container>>(() => InitializeContainer());
+
+            _containerAttribute = new Lazy<ContainerAttribute>(GetContainerAttribute);
             _partitionKeyAccessor = new Lazy<Func<TEntity, string>>(CreatePartitionKeyAccessor);
             _primaryKeyAccessor = new Lazy<Func<TEntity, string>>(CreatePrimaryKeyAccessor);
         }
@@ -348,16 +351,34 @@ namespace Cosmos.Abstracts
                 cosmosEntity.Id = Guid.NewGuid().ToString("N");
         }
 
+        /// <summary>
+        /// Gets the name for this repository container.
+        /// </summary>
+        /// <returns>The name for this repository container.</returns>
+        /// <remarks>
+        /// This is called with creating the Comos DB container for this repository.
+        /// </remarks>
+        protected virtual string GetContainerName()
+        {
+            var attribute = _containerAttribute.Value;
+            return attribute != null
+                ? attribute.ContainerName
+                : typeof(TEntity).Name;
+        }
 
         /// <summary>
-        /// Gets the partition key path for this repository container.
+        /// Gets the partition key path for this repository container. The path must start '/' char.
         /// </summary>
-        /// <returns>The partition key path.  The path must start '/' char.</returns>
+        /// <returns>The partition key path this repository container.  </returns>
         /// <remarks>
         /// This is called with creating the Comos DB container for this repository.
         /// </remarks>
         protected virtual string GetPartitionKeyPath()
         {
+            var attribute = _containerAttribute.Value;
+            if (attribute != null)
+                return attribute.PartitionKeyPath;
+
             var type = typeof(TEntity);
             var attributeType = typeof(PartitionKeyAttribute);
 
@@ -369,7 +390,7 @@ namespace Cosmos.Abstracts
                 return "/id";
 
             var jsonAttribute = Attribute.GetCustomAttribute(property, typeof(JsonPropertyAttribute)) as JsonPropertyAttribute;
-            if (jsonAttribute != null && !string.IsNullOrEmpty(jsonAttribute.PropertyName))
+            if (jsonAttribute != null && jsonAttribute.PropertyName.HasValue())
                 return "/" + jsonAttribute.PropertyName;
 
             var cosmosClient = Factory.GetCosmosClient();
@@ -546,15 +567,21 @@ namespace Cosmos.Abstracts
         /// <returns>The <see cref="ContainerProperties"/> instance.</returns>
         protected virtual ContainerProperties ContainerProperties()
         {
-            var containerName = typeof(TEntity).Name;
-
             return new ContainerProperties
             {
-                Id = containerName,
+                Id = GetContainerName(),
                 PartitionKeyPath = GetPartitionKeyPath()
             };
         }
 
+
+        private ContainerAttribute GetContainerAttribute()
+        {
+            var type = typeof(TEntity);
+            var attributeType = typeof(ContainerAttribute);
+
+            return Attribute.GetCustomAttribute(type, attributeType) as ContainerAttribute;
+        }
 
         private Func<TEntity, string> CreatePartitionKeyAccessor()
         {

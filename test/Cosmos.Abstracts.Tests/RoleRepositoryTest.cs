@@ -148,6 +148,31 @@ namespace Cosmos.Abstracts.Tests
         }
 
         [Fact]
+        public async Task FindAllQueryDefinition()
+        {
+            var role = new Role
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "CreateRole",
+                NormalizedName = "createrole"
+            };
+
+            var roleRepo = Services.GetRequiredService<ICosmosRepository<Role>>();
+            roleRepo.Should().NotBeNull();
+
+            var createResult = await roleRepo.CreateAsync(role);
+            createResult.Should().NotBeNull();
+            createResult.Id.Should().Be(role.Id);
+
+            var query = new QueryDefinition("SELECT * FROM Role f WHERE f.name = @name")
+                .WithParameter("@name", "CreateRole");
+
+            var results = await roleRepo.FindAllAsync(query);
+            results.Should().NotBeNull();
+            results.Count.Should().BeGreaterThan(0);
+        }
+
+        [Fact]
         public async Task FindOneStartsWith()
         {
             var role = new Role
@@ -166,6 +191,30 @@ namespace Cosmos.Abstracts.Tests
 
             var findResult = await roleRepo.FindOneAsync(r => r.Name.StartsWith("Create"));
             findResult.Should().NotBeNull();
+        }
+
+        [Fact]
+        public async Task FindOneQueryDefinition()
+        {
+            var role = new Role
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "CreateRole",
+                NormalizedName = "createrole"
+            };
+
+            var roleRepo = Services.GetRequiredService<ICosmosRepository<Role>>();
+            roleRepo.Should().NotBeNull();
+
+            var createResult = await roleRepo.CreateAsync(role);
+            createResult.Should().NotBeNull();
+            createResult.Id.Should().Be(role.Id);
+
+            var query = new QueryDefinition("SELECT * FROM Role f WHERE f.name = @name")
+                .WithParameter("@name", "CreateRole");
+
+            var result = await roleRepo.FindOneAsync(query);
+            result.Should().NotBeNull();
         }
 
         [Fact]
