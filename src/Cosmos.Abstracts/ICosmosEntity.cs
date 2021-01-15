@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using System;
+using Microsoft.Azure.Cosmos;
 
 namespace Cosmos.Abstracts
 {

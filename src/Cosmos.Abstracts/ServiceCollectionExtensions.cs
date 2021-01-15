@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services), "A service collection is required.");
 
             services.AddOptions<CosmosRepositoryOptions>()
-                    .Configure<IConfiguration>((settings, configuration) => configuration.GetSection(nameof(CosmosRepositoryOptions)).Bind(settings));
+                    .Configure<IConfiguration>((settings, configuration) => configuration.GetSection(CosmosRepositoryOptions.ConfigurationName).Bind(settings));
 
             services.AddLogging()
                     .AddHttpClient()

@@ -8,6 +8,11 @@ namespace Cosmos.Abstracts
     public class CosmosRepositoryOptions
     {
         /// <summary>
+        /// The application settings configuration name
+        /// </summary>
+        public const string ConfigurationName = "CosmosRepository";
+
+        /// <summary>
         /// Gets or sets the cosmos connection string. Primary or secondary connection strings are valid.
         /// </summary>
         public string ConnectionString { get; set; }

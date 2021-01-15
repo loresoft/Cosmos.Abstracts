@@ -81,8 +81,8 @@ namespace Cosmos.Abstracts
             try
             {
                 var response = await container
-                        .ReadItemAsync<TEntity>(id, partitionKey, cancellationToken: cancellationToken)
-                        .ConfigureAwait(false);
+                    .ReadItemAsync<TEntity>(id, partitionKey, cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
 
                 LogResponse(response);
 
@@ -111,7 +111,7 @@ namespace Cosmos.Abstracts
 
             while (feedIterator.HasMoreResults)
             {
-                FeedResponse<TEntity> response = await feedIterator
+                var response = await feedIterator
                     .ReadNextAsync(cancellationToken)
                     .ConfigureAwait(false);
 
