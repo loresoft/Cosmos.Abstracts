@@ -33,14 +33,23 @@ namespace Cosmos.Abstracts
         public string Etag { get; set; }
 
         /// <summary>
-        /// Gets or sets the timestamp.
+        /// Gets or sets the date and time, in UTC, this entity was created.
         /// </summary>
         /// <value>
-        /// The timestamp.
+        /// The date and time this entity was created.
+        /// </value>
+        [JsonProperty(PropertyName = "created")]
+        public DateTimeOffset Created { get; set; } = DateTimeOffset.UtcNow;
+
+        /// <summary>
+        /// Gets or sets the date and time this entity was updated.
+        /// </summary>
+        /// <value>
+        /// The date and time this entity was updated.
         /// </value>
         [JsonProperty("_ts")]
         [JsonConverter(typeof(UnixTimeConverter))]
-        public DateTimeOffset Timestamp { get; set; }
+        public DateTimeOffset Updated { get; set; }
 
         /// <inheritdoc/>
         public virtual PartitionKey GetPartitionKey() => new PartitionKey(Id);
