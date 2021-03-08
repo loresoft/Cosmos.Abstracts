@@ -12,7 +12,7 @@ namespace Cosmos.Abstracts
     {
         /// <inheritdoc/>
         [JsonProperty(PropertyName = "id")]
-        public string Id { get; set; } = Guid.NewGuid().ToString("N");
+        public string Id { get; set; } = ObjectId.GenerateNewId().ToString();
 
         /// <summary>
         /// Gets or sets the time to live.

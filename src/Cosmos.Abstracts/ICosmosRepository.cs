@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,23 @@ namespace Cosmos.Abstracts
     /// <typeparam name="TEntity">The type of the entity.</typeparam>
     public interface ICosmosRepository<TEntity>
     {
+        /// <summary>
+        /// Gets the Cosmos DB <see cref="Container"/> to use for data operations.
+        /// </summary>
+        /// <returns>A <see cref="Container"/> instance.</returns>
+        ValueTask<Container> GetContainerAsync();
+
+        /// <summary>
+        /// Creates a LINQ <see cref="IOrderedQueryable{TEntity}" /> for the <typeparamref name="TEntity" /> items.
+        /// </summary>
+        /// <param name="allowSynchronousQueryExecution">(Optional) The option which allows the query to be executed synchronously.</param>
+        /// <param name="continuationToken">(Optional) The continuation token in the Azure Cosmos DB service.</param>
+        /// <param name="requestOptions">(Optional) The options for the item query request.</param>
+        /// <returns>
+        /// An <see cref="IOrderedQueryable{TEntity}" /> that can evaluate the query.
+        /// </returns>
+        ValueTask<IOrderedQueryable<TEntity>> GetQueryableAsync(bool allowSynchronousQueryExecution = false, string continuationToken = null, QueryRequestOptions requestOptions = null);
+
         /// <summary>
         /// Find an entity with the specified <paramref name="id" /> and <paramref name="partitionKey" />.
         /// </summary>

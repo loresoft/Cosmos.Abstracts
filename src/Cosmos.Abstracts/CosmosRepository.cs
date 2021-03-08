@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,7 +23,7 @@ namespace Cosmos.Abstracts
     /// <typeparam name="TEntity">The type of the entity.</typeparam>
     public class CosmosRepository<TEntity> : ICosmosRepository<TEntity>
     {
-        private readonly Lazy<Task<Container>> _lazyContainer;
+        private readonly Lazy<ValueTask<Container>> _lazyContainer;
 
         private readonly Lazy<ContainerAttribute> _containerAttribute;
         private readonly Lazy<Func<TEntity, string>> _partitionKeyAccessor;
@@ -60,12 +59,28 @@ namespace Cosmos.Abstracts
             Options = repositoryOptions.Value;
             Factory = databaseFactory;
 
-            _lazyContainer = new Lazy<Task<Container>>(() => InitializeContainer());
+            _lazyContainer = new Lazy<ValueTask<Container>>(() => InitializeContainer());
 
             _containerAttribute = new Lazy<ContainerAttribute>(GetContainerAttribute);
             _partitionKeyAccessor = new Lazy<Func<TEntity, string>>(CreatePartitionKeyAccessor);
             _primaryKeyAccessor = new Lazy<Func<TEntity, string>>(CreatePrimaryKeyAccessor);
         }
+
+        /// <inheritdoc/>
+        public ValueTask<Container> GetContainerAsync()
+        {
+            return _lazyContainer.Value;
+        }
+
+
+        /// <inheritdoc/>
+        public async ValueTask<IOrderedQueryable<TEntity>> GetQueryableAsync(bool allowSynchronousQueryExecution = false, string continuationToken = null, QueryRequestOptions requestOptions = null)
+        {
+            var container = await GetContainerAsync().ConfigureAwait(false);
+
+            return container.GetItemLinqQueryable<TEntity>(allowSynchronousQueryExecution, continuationToken, requestOptions);
+        }
+
 
         /// <inheritdoc/>
         public async ValueTask<TEntity> FindAsync(string id, PartitionKey partitionKey = default, CancellationToken cancellationToken = default)
@@ -348,7 +363,7 @@ namespace Cosmos.Abstracts
                 return;
 
             if (cosmosEntity.Id.IsNullOrEmpty())
-                cosmosEntity.Id = Guid.NewGuid().ToString("N");
+                cosmosEntity.Id = ObjectId.GenerateNewId().ToString();
         }
 
         /// <summary>
@@ -452,19 +467,10 @@ namespace Cosmos.Abstracts
 
 
         /// <summary>
-        /// Gets the Cosmos DB <see cref="Container"/> to use for data operations.
-        /// </summary>
-        /// <returns>A <see cref="Container"/> instance.</returns>
-        protected Task<Container> GetContainerAsync()
-        {
-            return _lazyContainer.Value;
-        }
-
-        /// <summary>
         /// Initializes the container on first use. Override to customize how the <see cref="Container"/> is created in Cosmos DB.
         /// </summary>
         /// <returns>A <see cref="Container"/> instance.</returns>
-        protected virtual async Task<Container> InitializeContainer()
+        protected virtual async ValueTask<Container> InitializeContainer()
         {
             try
             {

@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Cosmos.Abstracts.Extensions;
 using Cosmos.Abstracts.Tests.Models;
 using Cosmos.Abstracts.Tests.Profiles;
 using DataGenerator;
@@ -68,6 +70,34 @@ namespace Cosmos.Abstracts.Tests
 
             var deletedResult = await repository.FindAsync(item.Id, item.GetPartitionKey());
             deletedResult.Should().BeNull();
+        }
+
+
+        [Fact]
+        public async Task QueryableTest()
+        {
+            var generator = Services.GetRequiredService<Generator>();
+            var repository = Services.GetRequiredService<ICosmosRepository<Template>>();
+            repository.Should().NotBeNull();
+
+            var item = generator.Single<Template>();
+
+            // create
+            var createResult = await repository.CreateAsync(item);
+            createResult.Should().NotBeNull();
+            createResult.Id.Should().Be(item.Id);
+
+            var queryable = await repository.GetQueryableAsync();
+            queryable.Should().NotBeNull();
+
+            var items = queryable.Take(10).ToListAsync();
+            items.Should().NotBeNull();
+
+            var firstOrDefault = queryable.FirstOrDefaultAsync();
+            firstOrDefault.Should().NotBeNull();
+
+            var first = queryable.FirstAsync(p => p.Id == item.Id);
+            first.Should().NotBeNull();
         }
     }
 
