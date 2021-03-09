@@ -83,7 +83,7 @@ namespace Cosmos.Abstracts
 
 
         /// <inheritdoc/>
-        public async ValueTask<TEntity> FindAsync(string id, PartitionKey partitionKey = default, CancellationToken cancellationToken = default)
+        public async ValueTask<TEntity> FindAsync(string id, PartitionKey partitionKey, CancellationToken cancellationToken = default)
         {
             if (id == null)
                 throw new ArgumentNullException(nameof(id));
@@ -107,6 +107,14 @@ namespace Cosmos.Abstracts
             {
                 return default;
             }
+        }
+
+        /// <inheritdoc/>
+        public async ValueTask<TEntity> FindAsync(string id, string partitionKey = null, CancellationToken cancellationToken = default)
+        {
+            var key = partitionKey.HasValue() ? new PartitionKey(partitionKey) : default;
+
+            return await FindAsync(id, key, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -295,8 +303,21 @@ namespace Cosmos.Abstracts
                 : entity;
         }
 
+
         /// <inheritdoc/>
-        public async ValueTask DeleteAsync(string id, PartitionKey partitionKey = default, CancellationToken cancellationToken = default)
+        public async ValueTask DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
+        {
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
+
+            var partitionKey = GetPartitionKey(entity);
+            var entityKey = GetEntityKey(entity);
+
+            await DeleteAsync(entityKey, partitionKey, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async ValueTask DeleteAsync(string id, PartitionKey partitionKey, CancellationToken cancellationToken = default)
         {
             if (id == null)
                 throw new ArgumentNullException(nameof(id));
@@ -315,15 +336,11 @@ namespace Cosmos.Abstracts
         }
 
         /// <inheritdoc/>
-        public async ValueTask DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
+        public async ValueTask DeleteAsync(string id, string partitionKey = null, CancellationToken cancellationToken = default)
         {
-            if (entity == null)
-                throw new ArgumentNullException(nameof(entity));
+            var key = partitionKey.HasValue() ? new PartitionKey(partitionKey) : default;
 
-            var partitionKey = GetPartitionKey(entity);
-            var entityKey = GetEntityKey(entity);
-
-            await DeleteAsync(entityKey, partitionKey, cancellationToken).ConfigureAwait(false);
+            await DeleteAsync(id, key, cancellationToken).ConfigureAwait(false);
         }
 
 
@@ -646,7 +663,6 @@ namespace Cosmos.Abstracts
 
             return expession.Compile();
         }
-
     }
 
 }

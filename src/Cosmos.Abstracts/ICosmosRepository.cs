@@ -41,7 +41,19 @@ namespace Cosmos.Abstracts
         /// An instance of <typeparamref name="TEntity"/> that has the specified identifier if found, otherwise null.
         /// </returns>
         /// <exception cref="System.ArgumentNullException"><paramref name="id"/> is <see langword="null" />.</exception>
-        ValueTask<TEntity> FindAsync(string id, PartitionKey partitionKey = default, CancellationToken cancellationToken = default);
+        ValueTask<TEntity> FindAsync(string id, PartitionKey partitionKey, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Find an entity with the specified <paramref name="id" /> and <paramref name="partitionKey" />.
+        /// </summary>
+        /// <param name="id">The entity identifier to find.</param>
+        /// <param name="partitionKey">The partition key.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>
+        /// An instance of <typeparamref name="TEntity"/> that has the specified identifier if found, otherwise null.
+        /// </returns>
+        /// <exception cref="System.ArgumentNullException"><paramref name="id"/> is <see langword="null" />.</exception>
+        ValueTask<TEntity> FindAsync(string id, string partitionKey = default, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Find all entities using the specified <paramref name="criteria"/> expression.
@@ -121,6 +133,7 @@ namespace Cosmos.Abstracts
         /// <exception cref="System.ArgumentNullException"><paramref name="entity"/> is null</exception>
         ValueTask<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
 
+
         /// <summary>
         /// Deletes the specified <paramref name="entity" /> from the underlying data store.
         /// </summary>
@@ -136,7 +149,16 @@ namespace Cosmos.Abstracts
         /// <param name="partitionKey">The partition key.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="System.ArgumentNullException"><paramref name="id"/> is <see langword="null" />.</exception>
-        ValueTask DeleteAsync(string id, PartitionKey partitionKey = default, CancellationToken cancellationToken = default);
+        ValueTask DeleteAsync(string id, PartitionKey partitionKey, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Deletes an entity with the specified <paramref name="id" /> and <paramref name="partitionKey" /> from the underlying data store.
+        /// </summary>
+        /// <param name="id">The entity identifier to delete.</param>
+        /// <param name="partitionKey">The partition key.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <exception cref="System.ArgumentNullException"><paramref name="id"/> is <see langword="null" />.</exception>
+        ValueTask DeleteAsync(string id, string partitionKey = default, CancellationToken cancellationToken = default);
     }
 
 }
