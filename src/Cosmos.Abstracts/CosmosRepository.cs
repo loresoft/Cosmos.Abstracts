@@ -23,7 +23,7 @@ namespace Cosmos.Abstracts
     /// <typeparam name="TEntity">The type of the entity.</typeparam>
     public class CosmosRepository<TEntity> : ICosmosRepository<TEntity>
     {
-        private readonly Lazy<ValueTask<Container>> _lazyContainer;
+        private readonly Lazy<Task<Container>> _lazyContainer;
 
         private readonly Lazy<ContainerAttribute> _containerAttribute;
         private readonly Lazy<Func<TEntity, string>> _partitionKeyAccessor;
@@ -59,7 +59,7 @@ namespace Cosmos.Abstracts
             Options = repositoryOptions.Value;
             Factory = databaseFactory;
 
-            _lazyContainer = new Lazy<ValueTask<Container>>(() => InitializeContainer());
+            _lazyContainer = new Lazy<Task<Container>>(InitializeContainer);
 
             _containerAttribute = new Lazy<ContainerAttribute>(GetContainerAttribute);
             _partitionKeyAccessor = new Lazy<Func<TEntity, string>>(CreatePartitionKeyAccessor);
@@ -67,14 +67,14 @@ namespace Cosmos.Abstracts
         }
 
         /// <inheritdoc/>
-        public ValueTask<Container> GetContainerAsync()
+        public Task<Container> GetContainerAsync()
         {
             return _lazyContainer.Value;
         }
 
 
         /// <inheritdoc/>
-        public async ValueTask<IOrderedQueryable<TEntity>> GetQueryableAsync(bool allowSynchronousQueryExecution = false, string continuationToken = null, QueryRequestOptions requestOptions = null)
+        public async Task<IOrderedQueryable<TEntity>> GetQueryableAsync(bool allowSynchronousQueryExecution = false, string continuationToken = null, QueryRequestOptions requestOptions = null)
         {
             var container = await GetContainerAsync().ConfigureAwait(false);
 
@@ -83,7 +83,7 @@ namespace Cosmos.Abstracts
 
 
         /// <inheritdoc/>
-        public async ValueTask<TEntity> FindAsync(string id, PartitionKey partitionKey, CancellationToken cancellationToken = default)
+        public async Task<TEntity> FindAsync(string id, PartitionKey partitionKey, CancellationToken cancellationToken = default)
         {
             if (id == null)
                 throw new ArgumentNullException(nameof(id));
@@ -110,7 +110,7 @@ namespace Cosmos.Abstracts
         }
 
         /// <inheritdoc/>
-        public async ValueTask<TEntity> FindAsync(string id, string partitionKey = null, CancellationToken cancellationToken = default)
+        public async Task<TEntity> FindAsync(string id, string partitionKey = null, CancellationToken cancellationToken = default)
         {
             var key = partitionKey.HasValue() ? new PartitionKey(partitionKey) : default;
 
@@ -119,7 +119,7 @@ namespace Cosmos.Abstracts
 
 
         /// <inheritdoc/>
-        public async ValueTask<IReadOnlyList<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>> criteria, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>> criteria, CancellationToken cancellationToken = default)
         {
             if (criteria == null)
                 throw new ArgumentNullException(nameof(criteria));
@@ -147,7 +147,7 @@ namespace Cosmos.Abstracts
         }
 
         /// <inheritdoc/>
-        public async ValueTask<IReadOnlyList<TEntity>> FindAllAsync(QueryDefinition queryDefinition, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<TEntity>> FindAllAsync(QueryDefinition queryDefinition, CancellationToken cancellationToken = default)
         {
             if (queryDefinition == null)
                 throw new ArgumentNullException(nameof(queryDefinition));
@@ -175,7 +175,7 @@ namespace Cosmos.Abstracts
 
 
         /// <inheritdoc/>
-        public async ValueTask<TEntity> FindOneAsync(Expression<Func<TEntity, bool>> criteria, CancellationToken cancellationToken = default)
+        public async Task<TEntity> FindOneAsync(Expression<Func<TEntity, bool>> criteria, CancellationToken cancellationToken = default)
         {
             if (criteria == null)
                 throw new ArgumentNullException(nameof(criteria));
@@ -204,7 +204,7 @@ namespace Cosmos.Abstracts
         }
 
         /// <inheritdoc/>
-        public async ValueTask<TEntity> FindOneAsync(QueryDefinition queryDefinition, CancellationToken cancellationToken = default)
+        public async Task<TEntity> FindOneAsync(QueryDefinition queryDefinition, CancellationToken cancellationToken = default)
         {
             if (queryDefinition == null)
                 throw new ArgumentNullException(nameof(queryDefinition));
@@ -232,7 +232,7 @@ namespace Cosmos.Abstracts
 
 
         /// <inheritdoc/>
-        public async ValueTask<TEntity> SaveAsync(TEntity entity, CancellationToken cancellationToken = default)
+        public async Task<TEntity> SaveAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
@@ -256,7 +256,7 @@ namespace Cosmos.Abstracts
         }
 
         /// <inheritdoc/>
-        public async ValueTask<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
+        public async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
@@ -280,7 +280,7 @@ namespace Cosmos.Abstracts
         }
 
         /// <inheritdoc/>
-        public async ValueTask<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
+        public async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
@@ -305,7 +305,7 @@ namespace Cosmos.Abstracts
 
 
         /// <inheritdoc/>
-        public async ValueTask DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
+        public async Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
@@ -317,7 +317,7 @@ namespace Cosmos.Abstracts
         }
 
         /// <inheritdoc/>
-        public async ValueTask DeleteAsync(string id, PartitionKey partitionKey, CancellationToken cancellationToken = default)
+        public async Task DeleteAsync(string id, PartitionKey partitionKey, CancellationToken cancellationToken = default)
         {
             if (id == null)
                 throw new ArgumentNullException(nameof(id));
@@ -336,7 +336,7 @@ namespace Cosmos.Abstracts
         }
 
         /// <inheritdoc/>
-        public async ValueTask DeleteAsync(string id, string partitionKey = null, CancellationToken cancellationToken = default)
+        public async Task DeleteAsync(string id, string partitionKey = null, CancellationToken cancellationToken = default)
         {
             var key = partitionKey.HasValue() ? new PartitionKey(partitionKey) : default;
 
@@ -487,7 +487,7 @@ namespace Cosmos.Abstracts
         /// Initializes the container on first use. Override to customize how the <see cref="Container"/> is created in Cosmos DB.
         /// </summary>
         /// <returns>A <see cref="Container"/> instance.</returns>
-        protected virtual async ValueTask<Container> InitializeContainer()
+        protected virtual async Task<Container> InitializeContainer()
         {
             try
             {
