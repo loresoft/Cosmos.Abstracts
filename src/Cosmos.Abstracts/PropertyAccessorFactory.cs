@@ -37,7 +37,7 @@ namespace Cosmos.Abstracts
             if (property == null)
                 return null;
 
-            return CreateGet(property);
+            return CreateGetDelegate(property);
         }
 
         /// <summary>
@@ -67,11 +67,11 @@ namespace Cosmos.Abstracts
             if (property == null)
                 return null;
 
-            return CreateGet(property);
+            return CreateGetDelegate(property);
         }
 
 
-        private static Func<object, string> CreateGet(PropertyInfo propertyInfo)
+        private static Func<object, string> CreateGetDelegate(PropertyInfo propertyInfo)
         {
             if (propertyInfo == null)
                 throw new ArgumentNullException(nameof(propertyInfo));
@@ -97,12 +97,12 @@ namespace Cosmos.Abstracts
                 instanceCast = Expression.TypeAs(instance, declaringType);
 
             var value = Expression.Call(instanceCast, getMethod);
-            var valueCast = propertyInfo.PropertyType.IsValueType
-                    ? Expression.Convert(value, typeof(string))
-                    : Expression.TypeAs(value, typeof(string));
 
-            var lambda = Expression.Lambda<Func<object, string>>(valueCast, instance);
-            return lambda.Compile();
+            if (propertyInfo.PropertyType == typeof(string))
+                return Expression.Lambda<Func<object, string>>(value, instance).Compile();
+
+            var toString = Expression.Call(value, "ToString", Type.EmptyTypes);
+            return Expression.Lambda<Func<object, string>>(toString, instance).Compile();
         }
     }
 }
