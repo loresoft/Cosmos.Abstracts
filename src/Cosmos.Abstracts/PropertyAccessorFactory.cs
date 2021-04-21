@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
+using System.Reflection;
 
 namespace Cosmos.Abstracts
 {
@@ -38,21 +37,7 @@ namespace Cosmos.Abstracts
             if (property == null)
                 return null;
 
-            var getMethod = property.GetGetMethod(false);
-            if (getMethod == null || property.GetIndexParameters().Length != 0)
-                return null;
-
-            var instance = Expression.Parameter(type, "instance");
-            var value = Expression.Call(instance, getMethod);
-
-            var expression = Expression.Lambda<Func<object, string>>(
-                property.PropertyType.IsValueType
-                    ? Expression.Convert(value, typeof(string))
-                    : Expression.TypeAs(value, typeof(string)),
-                instance
-            );
-
-            return expression.Compile();
+            return CreateGet(property);
         }
 
         /// <summary>
@@ -73,7 +58,7 @@ namespace Cosmos.Abstracts
         /// <returns></returns>
         public static Func<object, string> CreatePrimaryKeyAccessor(Type type)
         {
-            var names = new[] {"Id", "Key", type.Name + "Id"};
+            var names = new[] { "Id", "Key", type.Name + "Id" };
 
             var property = type
                 .GetProperties()
@@ -82,21 +67,42 @@ namespace Cosmos.Abstracts
             if (property == null)
                 return null;
 
-            var getMethod = property.GetGetMethod(false);
-            if (getMethod == null || property.GetIndexParameters().Length != 0)
+            return CreateGet(property);
+        }
+
+
+        private static Func<object, string> CreateGet(PropertyInfo propertyInfo)
+        {
+            if (propertyInfo == null)
+                throw new ArgumentNullException(nameof(propertyInfo));
+
+            if (!propertyInfo.CanRead)
                 return null;
 
-            var instance = Expression.Parameter(type, "instance");
-            var value = Expression.Call(instance, getMethod);
+            var getMethod = propertyInfo.GetGetMethod(true);
+            if (getMethod == null || propertyInfo.GetIndexParameters().Length != 0)
+                return null;
 
-            var expression = Expression.Lambda<Func<object, string>>(
-                property.PropertyType.IsValueType
+            var instance = Expression.Parameter(typeof(object), "instance");
+            var declaringType = propertyInfo.DeclaringType;
+            if (declaringType == null)
+                throw new ArgumentException("The specified PropertyInfo DeclaringType is null.", nameof(propertyInfo));
+
+            UnaryExpression instanceCast;
+            if (getMethod.IsStatic)
+                instanceCast = null;
+            else if (declaringType.IsValueType)
+                instanceCast = Expression.Convert(instance, declaringType);
+            else
+                instanceCast = Expression.TypeAs(instance, declaringType);
+
+            var value = Expression.Call(instanceCast, getMethod);
+            var valueCast = propertyInfo.PropertyType.IsValueType
                     ? Expression.Convert(value, typeof(string))
-                    : Expression.TypeAs(value, typeof(string)),
-                instance
-            );
+                    : Expression.TypeAs(value, typeof(string));
 
-            return expression.Compile();
+            var lambda = Expression.Lambda<Func<object, string>>(valueCast, instance);
+            return lambda.Compile();
         }
     }
 }
