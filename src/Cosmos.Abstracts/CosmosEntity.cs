@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using Cosmos.Abstracts.Converters;
 using Microsoft.Azure.Cosmos;
 using Newtonsoft.Json;
@@ -10,6 +11,16 @@ namespace Cosmos.Abstracts
     /// </summary>
     public abstract class CosmosEntity : ICosmosEntity
     {
+        private readonly Lazy<Func<object, string>> _partitionKeyAccessor;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CosmosEntity"/> class.
+        /// </summary>
+        protected CosmosEntity()
+        {
+            _partitionKeyAccessor = new Lazy<Func<object, string>>(() => PropertyAccessorFactory.CreatePartitionKeyAccessor(GetType()));
+        }
+
         /// <inheritdoc/>
         [JsonProperty(PropertyName = "id")]
         public string Id { get; set; } = ObjectId.GenerateNewId().ToString();
@@ -52,6 +63,14 @@ namespace Cosmos.Abstracts
         public DateTimeOffset Updated { get; set; }
 
         /// <inheritdoc/>
-        public virtual PartitionKey GetPartitionKey() => new PartitionKey(Id);
+        public virtual PartitionKey GetPartitionKey()
+        {
+            var accessor = _partitionKeyAccessor.Value;
+            if (accessor == null)
+                return new PartitionKey(Id);
+
+            var partitionValue = accessor(this);
+            return new PartitionKey(partitionValue);
+        }
     }
 }

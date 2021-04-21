@@ -26,8 +26,8 @@ namespace Cosmos.Abstracts
         private readonly Lazy<Task<Container>> _lazyContainer;
 
         private readonly Lazy<ContainerAttribute> _containerAttribute;
-        private readonly Lazy<Func<TEntity, string>> _partitionKeyAccessor;
-        private readonly Lazy<Func<TEntity, string>> _primaryKeyAccessor;
+        private readonly Lazy<Func<object, string>> _partitionKeyAccessor;
+        private readonly Lazy<Func<object, string>> _primaryKeyAccessor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CosmosRepository{TEntity}"/> class.
@@ -62,8 +62,8 @@ namespace Cosmos.Abstracts
             _lazyContainer = new Lazy<Task<Container>>(InitializeContainer);
 
             _containerAttribute = new Lazy<ContainerAttribute>(GetContainerAttribute);
-            _partitionKeyAccessor = new Lazy<Func<TEntity, string>>(CreatePartitionKeyAccessor);
-            _primaryKeyAccessor = new Lazy<Func<TEntity, string>>(CreatePrimaryKeyAccessor);
+            _partitionKeyAccessor = new Lazy<Func<object, string>>(PropertyAccessorFactory.CreatePartitionKeyAccessor<TEntity>);
+            _primaryKeyAccessor = new Lazy<Func<object, string>>(PropertyAccessorFactory.CreatePrimaryKeyAccessor<TEntity>);
         }
 
         /// <inheritdoc/>
@@ -604,64 +604,6 @@ namespace Cosmos.Abstracts
             var attributeType = typeof(ContainerAttribute);
 
             return Attribute.GetCustomAttribute(type, attributeType) as ContainerAttribute;
-        }
-
-        private Func<TEntity, string> CreatePartitionKeyAccessor()
-        {
-            var type = typeof(TEntity);
-            var attributeType = typeof(PartitionKeyAttribute);
-
-            var property = type
-                .GetProperties()
-                .FirstOrDefault(p => Attribute.IsDefined(p, attributeType));
-
-            if (property == null)
-                return null;
-
-            var getMethod = property.GetGetMethod(false);
-            if (getMethod == null || property.GetIndexParameters().Length != 0)
-                return null;
-
-            var instance = Expression.Parameter(typeof(TEntity), "instance");
-            var value = Expression.Call(instance, getMethod);
-
-            var expession = Expression.Lambda<Func<TEntity, string>>(
-                property.PropertyType.IsValueType
-                    ? Expression.Convert(value, typeof(string))
-                    : Expression.TypeAs(value, typeof(string)),
-                instance
-            );
-
-            return expession.Compile();
-        }
-
-        private Func<TEntity, string> CreatePrimaryKeyAccessor()
-        {
-            var type = typeof(TEntity);
-            var names = new[] { "Id", "Key", type.Name + "Id" };
-
-            var property = type
-                .GetProperties()
-                .FirstOrDefault(p => names.Contains(p.Name));
-
-            if (property == null)
-                return null;
-
-            var getMethod = property.GetGetMethod(false);
-            if (getMethod == null || property.GetIndexParameters().Length != 0)
-                return null;
-
-            var instance = Expression.Parameter(typeof(TEntity), "instance");
-            var value = Expression.Call(instance, getMethod);
-
-            var expession = Expression.Lambda<Func<TEntity, string>>(
-                property.PropertyType.IsValueType
-                    ? Expression.Convert(value, typeof(string))
-                    : Expression.TypeAs(value, typeof(string)),
-                instance
-            );
-
-            return expession.Compile();
         }
     }
 
