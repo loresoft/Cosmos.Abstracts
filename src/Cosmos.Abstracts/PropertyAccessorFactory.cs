@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -8,8 +9,11 @@ namespace Cosmos.Abstracts
     /// <summary>
     /// Property accessor factory methods
     /// </summary>
-    public class PropertyAccessorFactory
+    public static class PropertyAccessorFactory
     {
+        private static readonly ConcurrentDictionary<Type, Func<object, string>> _partitionKeyCache = new ConcurrentDictionary<Type, Func<object, string>>();
+        private static readonly ConcurrentDictionary<Type, Func<object, string>> _primaryKeyCache = new ConcurrentDictionary<Type, Func<object, string>>();
+
         /// <summary>
         /// Creates the partition key accessor.
         /// </summary>
@@ -28,16 +32,19 @@ namespace Cosmos.Abstracts
         /// <returns></returns>
         public static Func<object, string> CreatePartitionKeyAccessor(Type type)
         {
-            var attributeType = typeof(PartitionKeyAttribute);
+            return _partitionKeyCache.GetOrAdd(type, innerType =>
+            {
+                var attributeType = typeof(PartitionKeyAttribute);
 
-            var property = type
-                .GetProperties()
-                .FirstOrDefault(p => Attribute.IsDefined(p, attributeType));
+                var property = innerType
+                    .GetProperties()
+                    .FirstOrDefault(p => Attribute.IsDefined(p, attributeType));
 
-            if (property == null)
-                return null;
+                if (property == null)
+                    return null;
 
-            return CreateGetDelegate(property);
+                return CreateGetDelegate(property);
+            });
         }
 
         /// <summary>
@@ -58,16 +65,19 @@ namespace Cosmos.Abstracts
         /// <returns></returns>
         public static Func<object, string> CreatePrimaryKeyAccessor(Type type)
         {
-            var names = new[] { "Id", "Key", type.Name + "Id" };
+            return _primaryKeyCache.GetOrAdd(type, innerType =>
+            {
+                var names = new[] { "Id", "Key", type.Name + "Id" };
 
-            var property = type
-                .GetProperties()
-                .FirstOrDefault(p => names.Contains(p.Name));
+                var property = type
+                    .GetProperties()
+                    .FirstOrDefault(p => names.Contains(p.Name));
 
-            if (property == null)
-                return null;
+                if (property == null)
+                    return null;
 
-            return CreateGetDelegate(property);
+                return CreateGetDelegate(property);
+            });
         }
 
 
