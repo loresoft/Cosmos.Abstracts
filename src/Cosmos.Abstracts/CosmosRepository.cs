@@ -85,8 +85,8 @@ namespace Cosmos.Abstracts
         /// <inheritdoc/>
         public async Task<TEntity> FindAsync(string id, PartitionKey partitionKey, CancellationToken cancellationToken = default)
         {
-            if (id == null)
-                throw new ArgumentNullException(nameof(id));
+            if (id.IsNullOrEmpty())
+                return default;
 
             var container = await GetContainerAsync().ConfigureAwait(false);
 
@@ -112,6 +112,9 @@ namespace Cosmos.Abstracts
         /// <inheritdoc/>
         public async Task<TEntity> FindAsync(string id, string partitionKey = null, CancellationToken cancellationToken = default)
         {
+            if (id.IsNullOrEmpty())
+                return default;
+
             var key = partitionKey.HasValue() ? new PartitionKey(partitionKey) : default;
 
             return await FindAsync(id, key, cancellationToken).ConfigureAwait(false);
@@ -319,8 +322,8 @@ namespace Cosmos.Abstracts
         /// <inheritdoc/>
         public async Task DeleteAsync(string id, PartitionKey partitionKey, CancellationToken cancellationToken = default)
         {
-            if (id == null)
-                throw new ArgumentNullException(nameof(id));
+            if (id.IsNullOrEmpty())
+                return;
 
             var container = await GetContainerAsync().ConfigureAwait(false);
             var options = DeleteItemOptions();
@@ -338,6 +341,9 @@ namespace Cosmos.Abstracts
         /// <inheritdoc/>
         public async Task DeleteAsync(string id, string partitionKey = null, CancellationToken cancellationToken = default)
         {
+            if (id.IsNullOrEmpty())
+                return;
+
             var key = partitionKey.HasValue() ? new PartitionKey(partitionKey) : default;
 
             await DeleteAsync(id, key, cancellationToken).ConfigureAwait(false);
