@@ -22,7 +22,7 @@ namespace Cosmos.Abstracts
         }
 
         /// <inheritdoc/>
-        [JsonProperty(PropertyName = "id")]
+        [JsonProperty("id")]
         public string Id { get; set; } = ObjectId.GenerateNewId().ToString();
 
         /// <summary>
@@ -35,32 +35,22 @@ namespace Cosmos.Abstracts
         public int? TimeToLive { get; set; }
 
         /// <summary>
-        /// Gets or sets the etag.
+        /// Gets or sets the system generated property that specifies the resource etag required for optimistic concurrency control.
         /// </summary>
         /// <value>
-        /// The etag.
+        /// The system generated property that specifies the resource etag required for optimistic concurrency control.
         /// </value>
         [JsonProperty("_etag")]
         public string Etag { get; set; }
 
         /// <summary>
-        /// Gets or sets the date and time, in UTC, this entity was created.
+        /// Gets or sets the system generated last updated timestamp of the resource
         /// </summary>
         /// <value>
-        /// The date and time this entity was created.
-        /// </value>
-        [JsonProperty(PropertyName = "created")]
-        public DateTimeOffset Created { get; set; } = DateTimeOffset.UtcNow;
-
-        /// <summary>
-        /// Gets or sets the date and time this entity was updated.
-        /// </summary>
-        /// <value>
-        /// The date and time this entity was updated.
+        /// The system generated last updated timestamp of the resource
         /// </value>
         [JsonProperty("_ts")]
-        [JsonConverter(typeof(UnixTimeConverter))]
-        public DateTimeOffset Updated { get; set; }
+        public int Timestamp { get; set; }
 
         /// <inheritdoc/>
         public virtual PartitionKey GetPartitionKey()
