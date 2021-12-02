@@ -253,9 +253,13 @@ namespace Cosmos.Abstracts
 
             LogResponse(response);
 
-            return options.EnableContentResponseOnWrite == true
+            var result = options.EnableContentResponseOnWrite == true
                 ? response.Resource
                 : entity;
+
+            AfterSave(result);
+
+            return result;
         }
 
         /// <inheritdoc/>
@@ -277,9 +281,13 @@ namespace Cosmos.Abstracts
 
             LogResponse(response);
 
-            return options.EnableContentResponseOnWrite == true
+            var result = options.EnableContentResponseOnWrite == true
                 ? response.Resource
                 : entity;
+
+            AfterSave(result);
+
+            return result;
         }
 
         /// <inheritdoc/>
@@ -301,9 +309,13 @@ namespace Cosmos.Abstracts
 
             LogResponse(response);
 
-            return options.EnableContentResponseOnWrite == true
+            var result = options.EnableContentResponseOnWrite == true
                 ? response.Resource
                 : entity;
+
+            AfterSave(result);
+
+            return result;
         }
 
 
@@ -388,6 +400,15 @@ namespace Cosmos.Abstracts
             if (cosmosEntity.Id.IsNullOrEmpty())
                 cosmosEntity.Id = ObjectId.GenerateNewId().ToString();
         }
+
+        /// <summary>
+        /// Called after a saving the specified <paramref name="entity"/>.
+        /// </summary>
+        /// <param name="entity">The entity being saved.</param>
+        protected virtual void AfterSave(TEntity entity)
+        {
+        }
+
 
         /// <summary>
         /// Gets the name for this repository container.
