@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Microsoft.Azure.Cosmos;
 
 namespace Cosmos.Abstracts
@@ -159,6 +160,27 @@ namespace Cosmos.Abstracts
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="System.ArgumentNullException"><paramref name="id"/> is <see langword="null" />.</exception>
         Task DeleteAsync(string id, string partitionKey = default, CancellationToken cancellationToken = default);
+
+
+        /// <summary>
+        /// Patch an entity with the specified <paramref name="id" /> and <paramref name="partitionKey" /> from the underlying data store.
+        /// </summary>
+        /// <param name="id">The entity identifier to patch.</param>
+        /// <param name="partitionKey">The partition key.</param>
+        /// <param name="patchOperations">The patch operations.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
+        Task<TEntity> PatchAsync(string id, PartitionKey partitionKey, IReadOnlyList<PatchOperation> patchOperations, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Patch an entity with the specified <paramref name="id" /> and <paramref name="partitionKey" /> from the underlying data store.
+        /// </summary>
+        /// <param name="id">The entity identifier to patch.</param>
+        /// <param name="partitionKey">The partition key.</param>
+        /// <param name="patchOperations">The patch operations.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
+        Task<TEntity> PatchAsync(string id, string partitionKey, IReadOnlyList<PatchOperation> patchOperations, CancellationToken cancellationToken = default);
     }
 
 }

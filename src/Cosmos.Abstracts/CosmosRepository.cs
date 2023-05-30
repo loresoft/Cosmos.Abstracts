@@ -7,11 +7,14 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Cosmos.Abstracts.Extensions;
+
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+
 using Newtonsoft.Json;
 
 namespace Cosmos.Abstracts
@@ -362,6 +365,48 @@ namespace Cosmos.Abstracts
         }
 
 
+        /// <inheritdoc/>
+        public async Task<TEntity> PatchAsync(string id, PartitionKey partitionKey, IReadOnlyList<PatchOperation> patchOperations, CancellationToken cancellationToken = default)
+        {
+            if (id.IsNullOrEmpty())
+                return default;
+
+            if (patchOperations is null)
+                throw new ArgumentNullException(nameof(patchOperations));
+
+            if (partitionKey == default)
+                partitionKey = new PartitionKey(id);
+
+
+            var options = PatchOptions();
+
+            var container = await GetContainerAsync().ConfigureAwait(false);
+
+            var response = await container
+                .PatchItemAsync<TEntity>(id, partitionKey, patchOperations, options, cancellationToken)
+                .ConfigureAwait(false);
+
+            LogResponse(response);
+
+            var result = options.EnableContentResponseOnWrite == true
+                ? response.Resource
+                : default;
+
+            return result;
+        }
+
+        /// <inheritdoc/>
+        public async Task<TEntity> PatchAsync(string id, string partitionKey, IReadOnlyList<PatchOperation> patchOperations, CancellationToken cancellationToken = default)
+        {
+            if (id.IsNullOrEmpty())
+                return default;
+
+            var key = partitionKey.HasValue() ? new PartitionKey(partitionKey) : default;
+
+            return await PatchAsync(id, key, patchOperations, cancellationToken).ConfigureAwait(false);
+        }
+
+
         /// <summary>
         /// Gets the diagnostics logger instance.
         /// </summary>
@@ -549,7 +594,7 @@ namespace Cosmos.Abstracts
         /// <param name="memberName">Name of the calling member.</param>
         /// <param name="sourceFilePath">The source file path.</param>
         /// <param name="sourceLineNumber">The source line number.</param>
-        protected virtual void LogResponse<T>(Response<T> response, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
+        protected virtual void LogResponse<T>(Microsoft.Azure.Cosmos.Response<T> response, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
             if (response == null)
                 return;
@@ -609,6 +654,18 @@ namespace Cosmos.Abstracts
         protected virtual QueryRequestOptions QueryOptions()
         {
             return new QueryRequestOptions();
+        }
+
+        /// <summary>
+        /// The default <see cref="PatchItemRequestOptions"/> for patch operations
+        /// </summary>
+        /// <returns>The <see cref="PatchItemRequestOptions"/> instance.</returns>
+        protected virtual PatchItemRequestOptions PatchOptions()
+        {
+            return new PatchItemRequestOptions
+            {
+                EnableContentResponseOnWrite = !Options.OptimizeBandwidth
+            };
         }
 
         /// <summary>
