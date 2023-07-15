@@ -1,0 +1,105 @@
+name: Build Project
+
+env:
+  BUILD_PATH: '${{github.workspace}}/artifacts'
+  COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - master
+      - develop
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      cosmosdb:
+        image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator
+        env:
+          AZURE_COSMOS_EMULATOR_PARTITION_COUNT: 10
+          AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE: true
+        ports:
+          - 8081:8081
+          - 10251:10251
+          - 10252:10252
+          - 10253:10253
+          - 10254:10254
+        volumes:
+          - cosmos_data:/data/db
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+          dotnet-version: | 
+                6.0.x
+                7.0.x
+
+    - name: Update Version
+      uses: dotnet/nbgv@master
+      with:
+        setAllVars: true
+
+    - name: Restore Dependencies
+      run: dotnet restore
+
+    - name: Build Solution
+      run: dotnet build --no-restore --configuration Release
+    
+    - name: Run Test
+      run: dotnet test --configuration Release --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+
+    - name: Generate Coverage 
+      uses: danielpalme/ReportGenerator-GitHub-Action@5.1.23
+      with:
+        reports: '${{github.workspace}}/test/*/TestResults/*/coverage.info'
+        targetdir: ${{env.BUILD_PATH}}
+        reporttypes: lcov
+
+    - name: Report Coverage
+      if: success()
+      uses: coverallsapp/github-action@v2
+      with:
+          file: artifacts/lcov.info
+          format: lcov
+
+    - name: Create Packages
+      if: success() && github.event_name != 'pull_request'
+      run: dotnet pack --configuration Release --include-symbols --include-source --no-build --no-restore --output "${{env.BUILD_PATH}}"
+
+    - name: Upload Packages
+      if: success() && github.event_name != 'pull_request'
+      uses: actions/upload-artifact@v3
+      with:
+        name: packages
+        path: '${{env.BUILD_PATH}}'
+
+    - name: Publish Packages
+      if: success() && github.event_name != 'pull_request'
+      run: |
+        for package in $(find -name "*.nupkg"); do
+          echo "${0##*/}": Pushing $package...
+          dotnet nuget push $package --source https://nuget.pkg.github.com/loresoft/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+        done
+
+    - name: Publish Release Packages
+      if: success() && startsWith(github.ref, 'refs/tags/v')
+      run: |
+        for package in $(find -name "*.nupkg"); do
+          echo "${0##*/}": Pushing $package...
+          dotnet nuget push $package --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_KEY }} --skip-duplicate
+        done
