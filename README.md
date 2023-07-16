@@ -1,7 +1,7 @@
 # Cosmos.Abstracts
 Cosmos DB Abstracts library defines abstract base classes for repository pattern.
 
-[![Build status](https://github.com/loresoft/Cosmos.Abstracts/workflows/Build%20Project/badge.svg)](https://github.com/loresoft/Cosmos.Abstracts/actions)
+[![Build status](https://github.com/loresoft/Cosmos.Abstracts/workflows/Build/badge.svg)](https://github.com/loresoft/Cosmos.Abstracts/actions)
 
 [![NuGet Version](https://img.shields.io/nuget/v/Cosmos.Abstracts.svg?style=flat-square)](https://www.nuget.org/packages/Cosmos.Abstracts/)
 
