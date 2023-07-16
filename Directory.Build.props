@@ -30,12 +30,12 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <None Include=".\..\logo.png">
+    <None Include=".\..\..\logo.png">
       <Pack>true</Pack>
       <PackagePath>\</PackagePath>
       <Visible>false</Visible>
     </None>
-    <None Include=".\..\README.md">
+    <None Include=".\..\..\README.md">
       <Pack>true</Pack>
       <PackagePath>\</PackagePath>
       <Visible>false</Visible>
