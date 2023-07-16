@@ -19,23 +19,8 @@ on:
 jobs:
 
   build:
-    runs-on: ubuntu-latest
-
-    services:
-      cosmosdb:
-        image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator
-        env:
-          AZURE_COSMOS_EMULATOR_PARTITION_COUNT: 10
-          AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE: true
-        ports:
-          - 8081:8081
-          - 10251:10251
-          - 10252:10252
-          - 10253:10253
-          - 10254:10254
-        volumes:
-          - cosmos_data:/data/db
-
+    runs-on: windows-latest
+    
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -61,10 +46,10 @@ jobs:
       run: dotnet build --no-restore --configuration Release
 
     - name: Install Cosmos DB
+      shell: pwsh
       run: |
-        curl -k https://localhost:8081/_explorer/emulator.pem > ~/emulatorcert.crt
-        sudo cp ~/emulatorcert.crt /usr/local/share/ca-certificates/
-        sudo update-ca-certificates
+        Import-Module "$env:ProgramFiles\Azure Cosmos DB Emulator\PSModules\Microsoft.Azure.CosmosDB.Emulator"
+        Start-CosmosDbEmulator
 
     - name: Run Test
       run: dotnet test --configuration Release --collect:"XPlat Code Coverage" --settings coverlet.runsettings

@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 
-namespace Cosmos.Abstracts.Tests.Models
+namespace Cosmos.Abstracts.Tests.Models;
+
+public class Entry : CosmosEntity
 {
-    public class Entry : CosmosEntity
-    {
-        [PartitionKey]
-        public DateTimeOffset EntryDate { get; set; }
-    }
+    [PartitionKey]
+    public DateTimeOffset EntryDate { get; set; }
 }

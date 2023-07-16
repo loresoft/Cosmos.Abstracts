@@ -1,13 +1,12 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
+
 using Microsoft.Azure.Cosmos;
 
-namespace Cosmos.Abstracts
+namespace Cosmos.Abstracts;
+
+public interface ICosmosFactory
 {
-    public interface ICosmosFactory
-    {
-        CosmosClient GetCosmosClient();
+    CosmosClient GetCosmosClient();
 
-        Task<Database> GetDatabaseAsync();
-    }
-
+    Task<Database> GetDatabaseAsync();
 }

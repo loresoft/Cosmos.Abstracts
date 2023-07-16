@@ -1,16 +1,15 @@
-﻿using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos;
 
-namespace Cosmos.Abstracts.Tests.Models
+namespace Cosmos.Abstracts.Tests.Models;
+
+public class Comment
 {
-    public class Comment
-    {
-        public string Id { get; set; }
+    public string Id { get; set; }
 
-        public string Name { get; set; }
+    public string Name { get; set; }
 
-        public string Description { get; set; }
+    public string Description { get; set; }
 
-        [PartitionKey]
-        public string OwnerId { get; set; }
-    }
+    [PartitionKey]
+    public string OwnerId { get; set; }
 }

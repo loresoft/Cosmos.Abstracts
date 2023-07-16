@@ -1,9 +1,8 @@
-﻿using Cosmos.Abstracts.Tests.Models;
+using Cosmos.Abstracts.Tests.Models;
 
-namespace Cosmos.Abstracts.Tests.Services
+namespace Cosmos.Abstracts.Tests.Services;
+
+public interface IUserRepository : ICosmosRepository<User>
 {
-    public interface IUserRepository : ICosmosRepository<User>
-    {
 
-    }
 }

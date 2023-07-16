@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 
-namespace Cosmos.Abstracts
+namespace Cosmos.Abstracts;
+
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+public sealed class PartitionKeyAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-    public sealed class PartitionKeyAttribute : Attribute
-    {
 
-    }
 }
