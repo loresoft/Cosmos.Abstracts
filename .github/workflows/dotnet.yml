@@ -59,7 +59,13 @@ jobs:
 
     - name: Build Solution
       run: dotnet build --no-restore --configuration Release
-    
+
+    - name: Install Cosmos DB
+      run: |
+        curl -k https://localhost:8081/_explorer/emulator.pem > ~/emulatorcert.crt
+        sudo cp ~/emulatorcert.crt /usr/local/share/ca-certificates/
+        sudo update-ca-certificates
+
     - name: Run Test
       run: dotnet test --configuration Release --collect:"XPlat Code Coverage" --settings coverlet.runsettings
 
