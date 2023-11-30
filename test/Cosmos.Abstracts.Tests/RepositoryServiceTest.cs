@@ -1,5 +1,3 @@
-using System.Threading;
-
 using Cosmos.Abstracts.Tests.Models;
 
 using FluentAssertions;
@@ -12,9 +10,10 @@ using Xunit.Abstractions;
 namespace Cosmos.Abstracts.Tests;
 
 
-public class RepositoryServiceTest : TestServiceBase
+public class RepositoryServiceTest : DatabaseTestBase
 {
-    public RepositoryServiceTest(ITestOutputHelper outputHelper) : base(outputHelper)
+    public RepositoryServiceTest(ITestOutputHelper output, DatabaseFixture databaseFixture)
+        : base(output, databaseFixture)
     {
     }
 

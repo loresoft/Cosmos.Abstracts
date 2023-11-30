@@ -9,12 +9,8 @@ using Xunit.Abstractions;
 
 namespace Cosmos.Abstracts.Tests;
 
-public class EntityRepositoryTest : TestServiceBase
+public class EntityRepositoryTest 
 {
-    public EntityRepositoryTest(ITestOutputHelper outputHelper) : base(outputHelper)
-    {
-    }
-
     [Fact]
     public void TestGet()
     {

@@ -13,9 +13,10 @@ using Xunit.Abstractions;
 
 namespace Cosmos.Abstracts.Tests;
 
-public class ItemRepositoryTest : TestServiceBase
+public class ItemRepositoryTest : DatabaseTestBase
 {
-    public ItemRepositoryTest(ITestOutputHelper outputHelper) : base(outputHelper)
+    public ItemRepositoryTest(ITestOutputHelper output, DatabaseFixture databaseFixture)
+        : base(output, databaseFixture)
     {
     }
 

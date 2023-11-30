@@ -13,11 +13,11 @@ using Xunit.Abstractions;
 
 namespace Cosmos.Abstracts.Tests;
 
-public class RoleRepositoryTest : TestServiceBase
+public class RoleRepositoryTest : DatabaseTestBase
 {
-    public RoleRepositoryTest(ITestOutputHelper outputHelper) : base(outputHelper)
+    public RoleRepositoryTest(ITestOutputHelper output, DatabaseFixture databaseFixture)
+        : base(output, databaseFixture)
     {
-
     }
 
     [Fact]
