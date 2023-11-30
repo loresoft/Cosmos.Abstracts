@@ -1,11 +1,10 @@
 using System.Linq;
 using System.Threading.Tasks;
 
+using Bogus;
+
 using Cosmos.Abstracts.Extensions;
 using Cosmos.Abstracts.Tests.Models;
-using Cosmos.Abstracts.Tests.Profiles;
-
-using DataGenerator;
 
 using FluentAssertions;
 
@@ -22,19 +21,16 @@ public class TemplateRepositoryTest : TestServiceBase
     {
     }
 
-    protected override void ConfigureServices(IServiceCollection services)
-    {
-        base.ConfigureServices(services);
-
-        services.AddSingleton(_ => Generator.Create(c => c.Profile<TemplateProfile>()));
-    }
-
     [Fact]
     public async Task FullTest()
     {
-        var generator = Services.GetRequiredService<Generator>();
+        var generator = new Faker<Template>()
+            .RuleFor(p => p.Id, _ => ObjectId.GenerateNewId().ToString())
+            .RuleFor(p => p.Name, f => f.Name.FullName())
+            .RuleFor(p => p.Description, f => f.Lorem.Sentence())
+            .RuleFor(p => p.OwnerId, f => f.PickRandom(Constants.Owners));
 
-        var item = generator.Single<Template>();
+        var item = generator.Generate();
 
         var partitionKey = item.GetPartitionKey();
         partitionKey.Should().NotBeNull();
@@ -81,11 +77,16 @@ public class TemplateRepositoryTest : TestServiceBase
     [Fact]
     public async Task QueryableTest()
     {
-        var generator = Services.GetRequiredService<Generator>();
         var repository = Services.GetRequiredService<ICosmosRepository<Template>>();
         repository.Should().NotBeNull();
 
-        var item = generator.Single<Template>();
+        var generator = new Faker<Template>()
+            .RuleFor(p => p.Id, _ => ObjectId.GenerateNewId().ToString())
+            .RuleFor(p => p.Name, f => f.Name.FullName())
+            .RuleFor(p => p.Description, f => f.Lorem.Sentence())
+            .RuleFor(p => p.OwnerId, f => f.PickRandom(Constants.Owners));
+
+        var item = generator.Generate();
 
         // create
         var createResult = await repository.CreateAsync(item);

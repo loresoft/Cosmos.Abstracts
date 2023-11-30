@@ -1,9 +1,8 @@
 using System.Threading.Tasks;
 
-using Cosmos.Abstracts.Tests.Models;
-using Cosmos.Abstracts.Tests.Profiles;
+using Bogus;
 
-using DataGenerator;
+using Cosmos.Abstracts.Tests.Models;
 
 using FluentAssertions;
 
@@ -20,19 +19,16 @@ public class ItemRepositoryTest : TestServiceBase
     {
     }
 
-    protected override void ConfigureServices(IServiceCollection services)
-    {
-        base.ConfigureServices(services);
-
-        services.AddSingleton(_ => Generator.Create(c => c.Profile<ItemProfile>()));
-    }
-
     [Fact]
     public async Task FullTest()
     {
-        var generator = Services.GetRequiredService<Generator>();
+        var generator = new Faker<Item>()
+            .RuleFor(p => p.Id, _ => ObjectId.GenerateNewId().ToString())
+            .RuleFor(p => p.Name, f => f.Name.FullName())
+            .RuleFor(p => p.Description, f => f.Lorem.Sentence())
+            .RuleFor(p => p.OwnerId, f => f.PickRandom(Constants.Owners));
 
-        var item = generator.Single<Item>();
+        var item = generator.Generate();
 
         var partitionKey = item.GetPartitionKey();
         partitionKey.Should().NotBeNull();
