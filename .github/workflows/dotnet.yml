@@ -3,6 +3,8 @@ name: Build
 env:
   DOTNET_NOLOGO: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_ENVIRONMENT: github
+  ASPNETCORE_ENVIRONMENT: github
   BUILD_PATH: '${{github.workspace}}/artifacts'
   COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
@@ -25,7 +27,7 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -50,7 +52,7 @@ jobs:
         Start-CosmosDbEmulator
 
     - name: Run Test
-      run: dotnet test --configuration Release --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+      run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage" --settings coverlet.runsettings
 
     - name: Report Coverage
       if: success()
