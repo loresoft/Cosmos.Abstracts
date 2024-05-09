@@ -19,6 +19,7 @@
   <PropertyGroup Label="Debug">
     <DebugType>embedded</DebugType>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>false</IncludeSymbols>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
@@ -37,6 +38,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AssemblyMetadata.Generators" Version="2.0.0" PrivateAssets="All" />
     <PackageReference Include="MinVer" Version="5.0.0" PrivateAssets="All" />
   </ItemGroup>
 
