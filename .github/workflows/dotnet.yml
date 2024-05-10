@@ -53,12 +53,19 @@ jobs:
       - name: Run Test
         run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage" --settings coverlet.runsettings
 
+      - name: Generate Coverage
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.2.5
+        with:
+          reports: '${{github.workspace}}/test/*/TestResults/*/coverage.info'
+          targetdir: ${{env.BUILD_PATH}}
+          reporttypes: lcov
+
       - name: Report Coverage
         if: success()
         uses: coverallsapp/github-action@v2
         with:
-          file: "${{github.workspace}}/test/Cosmos.Abstracts.Tests/TestResults/*/coverage.info"
-          format: lcov
+            file: '${{env.BUILD_PATH}}/lcov.info'
+            format: lcov
 
       - name: Create Packages
         if: success() && github.event_name != 'pull_request'
