@@ -1,26 +1,15 @@
 using System.Linq;
 using System.Threading.Tasks;
 
-using Bogus;
-
 using Cosmos.Abstracts.Extensions;
 using Cosmos.Abstracts.Tests.Models;
 
-using FluentAssertions;
-
 using Microsoft.Extensions.DependencyInjection;
-
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Cosmos.Abstracts.Tests;
 
-public class TemplateRepositoryTest : DatabaseTestBase
+public class TemplateRepositoryTest(DatabaseFixture databaseFixture) : DatabaseTestBase(databaseFixture)
 {
-    public TemplateRepositoryTest(ITestOutputHelper output, DatabaseFixture databaseFixture)
-        : base(output, databaseFixture)
-    {
-    }
 
     [Fact]
     public async Task FullTest()
@@ -41,12 +30,12 @@ public class TemplateRepositoryTest : DatabaseTestBase
         repository.Should().NotBeNull();
 
         // create
-        var createResult = await repository.CreateAsync(item);
+        var createResult = await repository.CreateAsync(item, cancellationToken: Xunit.TestContext.Current.CancellationToken);
         createResult.Should().NotBeNull();
         createResult.Id.Should().Be(item.Id);
 
         // read
-        var readResult = await repository.FindAsync(item.Id, item.GetPartitionKey());
+        var readResult = await repository.FindAsync(item.Id, item.GetPartitionKey(), cancellationToken: Xunit.TestContext.Current.CancellationToken);
         readResult.Should().NotBeNull();
         readResult.Id.Should().Be(item.Id);
         readResult.OwnerId.Should().Be(item.OwnerId);
@@ -54,23 +43,23 @@ public class TemplateRepositoryTest : DatabaseTestBase
         // update
         readResult.Name = "Big " + readResult.Name;
 
-        var updateResult = await repository.UpdateAsync(readResult);
+        var updateResult = await repository.UpdateAsync(readResult, cancellationToken: Xunit.TestContext.Current.CancellationToken);
         updateResult.Should().NotBeNull();
         updateResult.Id.Should().Be(item.Id);
         updateResult.OwnerId.Should().Be(item.OwnerId);
 
         // query
-        var queryResult = await repository.FindOneAsync(r => r.Name.StartsWith("Big"));
+        var queryResult = await repository.FindOneAsync(r => r.Name.StartsWith("Big"), cancellationToken: Xunit.TestContext.Current.CancellationToken);
         queryResult.Should().NotBeNull();
 
-        var queryResults = await repository.FindAllAsync(r => r.Name.StartsWith("Big"));
+        var queryResults = await repository.FindAllAsync(r => r.Name.StartsWith("Big"), cancellationToken: Xunit.TestContext.Current.CancellationToken);
         queryResults.Should().NotBeNull();
         queryResults.Count.Should().BeGreaterThan(0);
 
         // delete
-        await repository.DeleteAsync(readResult);
+        await repository.DeleteAsync(readResult, cancellationToken: Xunit.TestContext.Current.CancellationToken);
 
-        var deletedResult = await repository.FindAsync(item.Id, item.GetPartitionKey());
+        var deletedResult = await repository.FindAsync(item.Id, item.GetPartitionKey(), cancellationToken: Xunit.TestContext.Current.CancellationToken);
         deletedResult.Should().BeNull();
     }
 
@@ -90,20 +79,20 @@ public class TemplateRepositoryTest : DatabaseTestBase
         var item = generator.Generate();
 
         // create
-        var createResult = await repository.CreateAsync(item);
+        var createResult = await repository.CreateAsync(item, cancellationToken: Xunit.TestContext.Current.CancellationToken);
         createResult.Should().NotBeNull();
         createResult.Id.Should().Be(item.Id);
 
         var queryable = await repository.GetQueryableAsync();
         queryable.Should().NotBeNull();
 
-        var items = queryable.Take(10).ToListAsync();
+        var items = queryable.Take(10).ToListAsync(cancellationToken: Xunit.TestContext.Current.CancellationToken);
         items.Should().NotBeNull();
 
-        var firstOrDefault = queryable.FirstOrDefaultAsync();
+        var firstOrDefault = queryable.FirstOrDefaultAsync(cancellationToken: Xunit.TestContext.Current.CancellationToken);
         firstOrDefault.Should().NotBeNull();
 
-        var first = queryable.FirstAsync(p => p.Id == item.Id);
+        var first = queryable.FirstAsync(p => p.Id == item.Id, cancellationToken: Xunit.TestContext.Current.CancellationToken);
         first.Should().NotBeNull();
     }
 }

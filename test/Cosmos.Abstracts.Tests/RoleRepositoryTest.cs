@@ -3,22 +3,13 @@ using System.Threading.Tasks;
 
 using Cosmos.Abstracts.Tests.Models;
 
-using FluentAssertions;
-
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.DependencyInjection;
 
-using Xunit;
-using Xunit.Abstractions;
-
 namespace Cosmos.Abstracts.Tests;
 
-public class RoleRepositoryTest : DatabaseTestBase
+public class RoleRepositoryTest(DatabaseFixture databaseFixture) : DatabaseTestBase(databaseFixture)
 {
-    public RoleRepositoryTest(ITestOutputHelper output, DatabaseFixture databaseFixture)
-        : base(output, databaseFixture)
-    {
-    }
 
     [Fact]
     public async Task CreateRole()
@@ -33,7 +24,7 @@ public class RoleRepositoryTest : DatabaseTestBase
         var roleRepo = Services.GetRequiredService<ICosmosRepository<Role>>();
         roleRepo.Should().NotBeNull();
 
-        var result = await roleRepo.CreateAsync(role);
+        var result = await roleRepo.CreateAsync(role, cancellationToken: Xunit.TestContext.Current.CancellationToken);
         result.Should().NotBeNull();
         result.Id.Should().Be(role.Id);
     }
@@ -51,7 +42,7 @@ public class RoleRepositoryTest : DatabaseTestBase
         var roleRepo = Services.GetRequiredService<ICosmosRepository<Role>>();
         roleRepo.Should().NotBeNull();
 
-        var result = await roleRepo.SaveAsync(role);
+        var result = await roleRepo.SaveAsync(role, cancellationToken: Xunit.TestContext.Current.CancellationToken);
         result.Should().NotBeNull();
         result.Id.Should().Be(role.Id);
     }
@@ -69,14 +60,14 @@ public class RoleRepositoryTest : DatabaseTestBase
         var roleRepo = Services.GetRequiredService<ICosmosRepository<Role>>();
         roleRepo.Should().NotBeNull();
 
-        var createResult = await roleRepo.CreateAsync(role);
+        var createResult = await roleRepo.CreateAsync(role, cancellationToken: Xunit.TestContext.Current.CancellationToken);
         createResult.Should().NotBeNull();
         createResult.Id.Should().Be(role.Id);
 
         createResult.Name = "CreateUpdateRole";
         createResult.NormalizedName = "createupdaterole";
 
-        var updateResult = await roleRepo.UpdateAsync(createResult);
+        var updateResult = await roleRepo.UpdateAsync(createResult, cancellationToken: Xunit.TestContext.Current.CancellationToken);
         updateResult.Should().NotBeNull();
         updateResult.Id.Should().Be(role.Id);
     }
@@ -94,11 +85,11 @@ public class RoleRepositoryTest : DatabaseTestBase
         var roleRepo = Services.GetRequiredService<ICosmosRepository<Role>>();
         roleRepo.Should().NotBeNull();
 
-        var createResult = await roleRepo.CreateAsync(role);
+        var createResult = await roleRepo.CreateAsync(role, cancellationToken: Xunit.TestContext.Current.CancellationToken);
         createResult.Should().NotBeNull();
         createResult.Id.Should().Be(role.Id);
 
-        var readResult = await roleRepo.FindAsync(role.Id);
+        var readResult = await roleRepo.FindAsync(role.Id, cancellationToken: Xunit.TestContext.Current.CancellationToken);
         readResult.Should().NotBeNull();
         readResult.Id.Should().Be(role.Id);
     }
@@ -116,16 +107,16 @@ public class RoleRepositoryTest : DatabaseTestBase
         var roleRepo = Services.GetRequiredService<ICosmosRepository<Role>>();
         roleRepo.Should().NotBeNull();
 
-        var createResult = await roleRepo.CreateAsync(role);
+        var createResult = await roleRepo.CreateAsync(role, cancellationToken: Xunit.TestContext.Current.CancellationToken);
         createResult.Should().NotBeNull();
         createResult.Id.Should().Be(role.Id);
 
-        await roleRepo.DeleteAsync(role.Id);
+        await roleRepo.DeleteAsync(role.Id, cancellationToken: Xunit.TestContext.Current.CancellationToken);
 
-        var findResult = await roleRepo.FindAsync(role.Id);
+        var findResult = await roleRepo.FindAsync(role.Id, cancellationToken: Xunit.TestContext.Current.CancellationToken);
         findResult.Should().BeNull();
 
-        //Func<Task> findAsync = async () => await roleRepo.FindAsync(role.Id);
+        //Func<Task> findAsync = async () => await roleRepo.FindAsync(role.Id, cancellationToken: Xunit.TestContext.Current.CancellationToken);
         //findAsync.Should().Throw<CosmosException>();
     }
 
@@ -142,11 +133,11 @@ public class RoleRepositoryTest : DatabaseTestBase
         var roleRepo = Services.GetRequiredService<ICosmosRepository<Role>>();
         roleRepo.Should().NotBeNull();
 
-        var createResult = await roleRepo.CreateAsync(role);
+        var createResult = await roleRepo.CreateAsync(role, cancellationToken: Xunit.TestContext.Current.CancellationToken);
         createResult.Should().NotBeNull();
         createResult.Id.Should().Be(role.Id);
 
-        var results = await roleRepo.FindAllAsync(r => r.Name.StartsWith("Create"));
+        var results = await roleRepo.FindAllAsync(r => r.Name.StartsWith("Create"), cancellationToken: Xunit.TestContext.Current.CancellationToken);
         results.Should().NotBeNull();
         results.Count.Should().BeGreaterThan(0);
     }
@@ -164,14 +155,14 @@ public class RoleRepositoryTest : DatabaseTestBase
         var roleRepo = Services.GetRequiredService<ICosmosRepository<Role>>();
         roleRepo.Should().NotBeNull();
 
-        var createResult = await roleRepo.CreateAsync(role);
+        var createResult = await roleRepo.CreateAsync(role, cancellationToken: Xunit.TestContext.Current.CancellationToken);
         createResult.Should().NotBeNull();
         createResult.Id.Should().Be(role.Id);
 
         var query = new QueryDefinition("SELECT * FROM Role f WHERE f.name = @name")
             .WithParameter("@name", "CreateRole");
 
-        var results = await roleRepo.FindAllAsync(query);
+        var results = await roleRepo.FindAllAsync(query, cancellationToken: Xunit.TestContext.Current.CancellationToken);
         results.Should().NotBeNull();
         results.Count.Should().BeGreaterThan(0);
     }
@@ -189,11 +180,11 @@ public class RoleRepositoryTest : DatabaseTestBase
         var roleRepo = Services.GetRequiredService<ICosmosRepository<Role>>();
         roleRepo.Should().NotBeNull();
 
-        var createResult = await roleRepo.CreateAsync(role);
+        var createResult = await roleRepo.CreateAsync(role, cancellationToken: Xunit.TestContext.Current.CancellationToken);
         createResult.Should().NotBeNull();
         createResult.Id.Should().Be(role.Id);
 
-        var findResult = await roleRepo.FindOneAsync(r => r.Name.StartsWith("Create"));
+        var findResult = await roleRepo.FindOneAsync(r => r.Name.StartsWith("Create"), cancellationToken: Xunit.TestContext.Current.CancellationToken);
         findResult.Should().NotBeNull();
     }
 
@@ -210,14 +201,14 @@ public class RoleRepositoryTest : DatabaseTestBase
         var roleRepo = Services.GetRequiredService<ICosmosRepository<Role>>();
         roleRepo.Should().NotBeNull();
 
-        var createResult = await roleRepo.CreateAsync(role);
+        var createResult = await roleRepo.CreateAsync(role, cancellationToken: Xunit.TestContext.Current.CancellationToken);
         createResult.Should().NotBeNull();
         createResult.Id.Should().Be(role.Id);
 
         var query = new QueryDefinition("SELECT * FROM Role f WHERE f.name = @name")
             .WithParameter("@name", "CreateRole");
 
-        var result = await roleRepo.FindOneAsync(query);
+        var result = await roleRepo.FindOneAsync(query, cancellationToken: Xunit.TestContext.Current.CancellationToken);
         result.Should().NotBeNull();
     }
 
@@ -227,7 +218,7 @@ public class RoleRepositoryTest : DatabaseTestBase
         var roleRepo = Services.GetRequiredService<ICosmosRepository<Role>>();
         roleRepo.Should().NotBeNull();
 
-        var results = await roleRepo.FindAllAsync(r => r.Name == "blah" + DateTime.Now.Ticks);
+        var results = await roleRepo.FindAllAsync(r => r.Name == "blah" + DateTime.Now.Ticks, cancellationToken: Xunit.TestContext.Current.CancellationToken);
         results.Should().NotBeNull();
         results.Count.Should().Be(0);
     }

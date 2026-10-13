@@ -1,5 +1,3 @@
-using System;
-
 namespace Cosmos.Abstracts;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]

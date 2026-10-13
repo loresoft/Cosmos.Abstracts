@@ -1,5 +1,3 @@
-﻿using Xunit;
-
 namespace Cosmos.Abstracts.Tests;
 
 [CollectionDefinition(DatabaseCollection.CollectionName)]

@@ -1,7 +1,3 @@
-using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-
 using Cosmos.Abstracts.Extensions;
 
 using Microsoft.Azure.Cosmos;

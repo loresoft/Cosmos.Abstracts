@@ -2,14 +2,9 @@ using System;
 
 using Cosmos.Abstracts.Tests.Models;
 
-using FluentAssertions;
-
-using Xunit;
-using Xunit.Abstractions;
-
 namespace Cosmos.Abstracts.Tests;
 
-public class EntityRepositoryTest 
+public class EntityRepositoryTest
 {
     [Fact]
     public void TestGet()

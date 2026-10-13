@@ -1,23 +1,12 @@
 using Cosmos.Abstracts.Tests.Models;
 
-using FluentAssertions;
-
 using Microsoft.Extensions.DependencyInjection;
-
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Cosmos.Abstracts.Tests;
 
 
-public class RepositoryServiceTest : DatabaseTestBase
+public class RepositoryServiceTest(DatabaseFixture databaseFixture) : DatabaseTestBase(databaseFixture)
 {
-    public RepositoryServiceTest(ITestOutputHelper output, DatabaseFixture databaseFixture)
-        : base(output, databaseFixture)
-    {
-    }
-
-
     [Fact]
     public void DefaultServices()
     {

@@ -1,0 +1,15 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Build/">
+    <File Path=".github/workflows/dotnet.yml" />
+    <File Path="coverlet.runsettings" />
+    <File Path="README.md" />
+    <File Path="src/Directory.Build.props" />
+  </Folder>
+  <Project Path="src/Cosmos.Abstracts/Cosmos.Abstracts.csproj" />
+  <Project Path="test/Cosmos.Abstracts.Tests/Cosmos.Abstracts.Tests.csproj" />
+</Solution>
