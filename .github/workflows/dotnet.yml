@@ -24,7 +24,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -42,12 +42,6 @@ jobs:
 
       - name: Build Solution
         run: dotnet build --no-restore --configuration Release
-
-      - name: Start Cosmos DB
-        shell: pwsh
-        run: |
-          Import-Module "$env:ProgramFiles\Azure Cosmos DB Emulator\PSModules\Microsoft.Azure.CosmosDB.Emulator"
-          Start-CosmosDbEmulator
 
       - name: Run Test
         run: dotnet test --no-build --configuration Release --coverlet --coverlet-output-format lcov
