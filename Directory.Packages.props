@@ -7,7 +7,7 @@
     <PackageVersion Include="AssemblyMetadata.Generators" Version="2.2.0" />
     <PackageVersion Include="AwesomeAssertions" Version="9.6.0" />
     <PackageVersion Include="Bogus" Version="35.6.5" />
-    <PackageVersion Include="coverlet.MTP" Version="10.1.0" />
+    <PackageVersion Include="coverlet.MTP" Version="10.1.1" />
     <PackageVersion Include="FluentAssertions" Version="8.11.0" />
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.64.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.12" />
